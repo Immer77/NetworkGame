@@ -20,9 +20,7 @@ public class SendThread extends Thread{
 
             // Når der er modtaget en besked får den sendt den afsted til serveren
 
-
             DataOutputStream outToClient = new DataOutputStream(connSocket.getOutputStream());
-
 
             while (true){
                 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(System.in));

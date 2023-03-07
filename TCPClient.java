@@ -19,15 +19,15 @@ public class TCPClient {
         // Server IP og serverens port og så går man tilbage til server klassen hvor Accept metoden bliver kaldt
 
         Map<String, String> dns = new HashMap<>();
-        dns.put("Peter", "localhost");
-        dns.put("Rasmus","10.10.131.166");
+        dns.put("peter", "10.10.138.207");
+        dns.put("rasmus","10.10.131.166");
         dns.put("dan", "10.10.138.2");
 
 
 
         System.out.println("Who do you wanna connect to?");
         Scanner connection = new Scanner(System.in);
-        String key = connection.next();
+        String key = connection.next().toLowerCase();
         if(dns.containsKey(key)){
             try {
                 System.out.println("Connected to: " + key + " On Address:" + dns.get(key));
@@ -52,10 +52,5 @@ public class TCPClient {
         }else{
             System.out.println("Not in the DNS Table");
         }
-
-
-
     }
 }
-
-

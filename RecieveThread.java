@@ -30,6 +30,4 @@ public class RecieveThread extends Thread {
         }
         // do the work here
     }
-
-
 }
