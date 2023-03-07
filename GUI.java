@@ -20,8 +20,6 @@ import javafx.scene.text.*;
 
 public class GUI extends Application {
 
-
-
 	public static final int size = 20; 
 	public static final int scene_height = size * 20 + 100;
 	public static final int scene_width = size * 20 + 200;
@@ -59,7 +57,6 @@ public class GUI extends Application {
 			"wwwwwwwwwwwwwwwwwwww"
 	};
 
-
 	// -------------------------------------------
 	// | Maze: (0,0)              | Score: (1,0) |
 	// |-----------------------------------------|
@@ -72,9 +69,11 @@ public class GUI extends Application {
 		try {
 
 			//Establish connection
+
 			Socket clientSocket = new Socket("localhost", 1026);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+			new RecieverThread(clientSocket).start();
 			new SendThread(clientSocket).start();
 
 
@@ -133,19 +132,19 @@ public class GUI extends Application {
 					switch (event.getCode()) {
 						case UP:
 							outToServer.writeBytes("up \n");
-							String message = inFromServer.readLine();
-							System.out.println(message);
 							playerMoved(0,-1,"up");
 							break;
 						case DOWN:
+							outToServer.writeBytes(("down \n"));
 							playerMoved(0,+1,"down");
 							break;
 						case LEFT:
+							outToServer.writeBytes(("left \n"));
 							playerMoved(-1,0,"left");
 							break;
 						case RIGHT:
+							outToServer.writeBytes(("right \n"));
 							playerMoved(+1,0,"right");
-
 							break;
 
 						default: break;
@@ -236,7 +235,29 @@ public class GUI extends Application {
 
 
 	class RecieverThread extends Thread{
+		Socket connSocket;
+		String clientSentence;
 
+		public RecieverThread(Socket connSocket) {
+			this.connSocket = connSocket;
+		}
+
+		public void run() {
+			try {
+				// Venter på at den kommer in from client før den kan sende den afsted til serveren
+				BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connSocket.getInputStream()));
+				// Når der er modtaget en besked får den sendt den afsted til serveren
+				// Do the work and the communication with the client here
+				while (true){
+					clientSentence = inFromClient.readLine();
+					System.out.println("Prut" + clientSentence);
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			// do the work here
+		}
 
 	}
 
