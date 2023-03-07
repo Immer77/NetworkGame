@@ -2,9 +2,10 @@ package game2023.game2023;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server {
-
+    private static ArrayList<ServerThread> clients = new ArrayList<>();
     /**
      * @param args
      */
@@ -14,10 +15,21 @@ public class Server {
 
 
         // Hver gang der oprettes en connection.
-        Socket connectionSocket = welcomeSocket.accept();
-        new RecieveThread(connectionSocket).start();
-        new SendThread(connectionSocket).start();
+        while (true){
+            Socket connectionSocket = welcomeSocket.accept();
+            ServerThread serverThread = new ServerThread(connectionSocket);
+            clients.add(serverThread);
+            serverThread.start();
+        }
 
     }
+
+    public static void sendMessage(String message){
+        for(ServerThread s : clients){
+            s.sendMessage(message);
+        }
+    }
+
+
 
 }

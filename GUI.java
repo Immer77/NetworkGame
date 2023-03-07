@@ -175,6 +175,7 @@ public class GUI extends Application {
 				if (direction.equals("down")) {
 					fields[x][y].setGraphic(new ImageView(hero_down));
 				};
+				Server.sendMessage(direction);
 
 				me.setXpos(x);
 				me.setYpos(y);
