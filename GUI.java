@@ -1,5 +1,10 @@
 package game2023.game2023;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +19,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.*;
 
 public class GUI extends Application {
+
+
 
 	public static final int size = 20; 
 	public static final int scene_height = size * 20 + 100;
@@ -52,7 +59,7 @@ public class GUI extends Application {
 			"wwwwwwwwwwwwwwwwwwww"
 	};
 
-	
+
 	// -------------------------------------------
 	// | Maze: (0,0)              | Score: (1,0) |
 	// |-----------------------------------------|
@@ -63,6 +70,14 @@ public class GUI extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+
+			//Establish connection
+			Socket clientSocket = new Socket("localhost", 1026);
+			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			new SendThread(clientSocket).start();
+
+
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
@@ -114,14 +129,31 @@ public class GUI extends Application {
 			primaryStage.show();
 
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-				switch (event.getCode()) {
-				case UP:    playerMoved(0,-1,"up");    break;
-				case DOWN:  playerMoved(0,+1,"down");  break;
-				case LEFT:  playerMoved(-1,0,"left");  break;
-				case RIGHT: playerMoved(+1,0,"right"); break;
+				try {
+					switch (event.getCode()) {
+						case UP:
+							outToServer.writeBytes("up \n");
+							String message = inFromServer.readLine();
+							System.out.println(message);
+							playerMoved(0,-1,"up");
+							break;
+						case DOWN:
+							playerMoved(0,+1,"down");
+							break;
+						case LEFT:
+							playerMoved(-1,0,"left");
+							break;
+						case RIGHT:
+							playerMoved(+1,0,"right");
 
-				default: break;
+							break;
+
+						default: break;
+					}
+				}catch (IOException ioException){
+
 				}
+
 			});
 			
             // Setting up standard players
@@ -146,6 +178,7 @@ public class GUI extends Application {
 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
 		me.direction = direction;
+		Server.sendMessage(direction);
 		int x = me.getXpos(),y = me.getYpos();
 
 		if (board[y+delta_y].charAt(x+delta_x)=='w') {
@@ -175,7 +208,7 @@ public class GUI extends Application {
 				if (direction.equals("down")) {
 					fields[x][y].setGraphic(new ImageView(hero_down));
 				};
-				Server.sendMessage(direction);
+
 
 				me.setXpos(x);
 				me.setYpos(y);
@@ -199,6 +232,12 @@ public class GUI extends Application {
 			}
 		}
 		return null;
+	}
+
+
+	class RecieverThread extends Thread{
+
+
 	}
 
 	

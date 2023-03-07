@@ -27,6 +27,7 @@ public class ServerThread extends Thread {
                 //sendMessageToServer(clientSentence);
                 //Kald serverMetode
                 Server.sendMessage(clientSentence);
+                System.out.println(clientSentence);
 
             }
 
@@ -40,6 +41,7 @@ public class ServerThread extends Thread {
         try {
             DataOutputStream outToClient = new DataOutputStream(socket.getOutputStream());
             outToClient.writeBytes(message + "\n");
+            System.out.println("I Tråden" + message);
 
         }catch (IOException io){
 

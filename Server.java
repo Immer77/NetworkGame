@@ -27,6 +27,8 @@ public class Server {
     public static void sendMessage(String message){
         for(ServerThread s : clients){
             s.sendMessage(message);
+            System.out.println("I serveren" + message);
+
         }
     }
 
