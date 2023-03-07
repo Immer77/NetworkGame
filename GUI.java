@@ -1,17 +1,23 @@
 package game2023.game2023;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GUI extends Application {
 
@@ -52,7 +58,17 @@ public class GUI extends Application {
 			"wwwwwwwwwwwwwwwwwwww"
 	};
 
-	
+	private ArrayList<RecieveThread> recieves = new ArrayList<>();
+	private ServerSocket serverSocket;
+
+	{
+		try {
+			serverSocket = new ServerSocket(1026);
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+
 	// -------------------------------------------
 	// | Maze: (0,0)              | Score: (1,0) |
 	// |-----------------------------------------|
@@ -63,6 +79,11 @@ public class GUI extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+
+
+
+
+//------------------------------------------------------------------------
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
@@ -139,6 +160,10 @@ public class GUI extends Application {
 			fields[13][14].setGraphic(new ImageView(hero_down));
 
 			scoreList.setText(getScoreList());
+
+//-----------------------------------------------------------------------------------------------------
+
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -176,6 +201,7 @@ public class GUI extends Application {
 					fields[x][y].setGraphic(new ImageView(hero_down));
 				};
 
+
 				me.setXpos(x);
 				me.setYpos(y);
 			}
@@ -200,6 +226,9 @@ public class GUI extends Application {
 		return null;
 	}
 
+	public void addReciever(RecieveThread r) {
+		this.recieves.add(r);
+	}
 	
 }
 

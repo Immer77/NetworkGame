@@ -5,13 +5,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SendThread extends Thread{
     Socket connSocket;
+    List<Socket> sockets = new ArrayList<>();
     String sentence;
 
     public SendThread(Socket connSocket) {
         this.connSocket = connSocket;
+    }
+    public void addSocket(Socket s) {
+        this.sockets.add(s);
     }
 
     public void run() {
