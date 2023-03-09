@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -28,7 +29,7 @@ public class GUI extends Application {
 	public static Image image_wall;
 	public static Image hero_right,hero_left,hero_up,hero_down;
 
-	public static Player me;
+	public static Player Peter;
 	public static Player Dan;
 	public static Player Rasmus;
 	public static Player Abdulahi;
@@ -73,7 +74,7 @@ public class GUI extends Application {
 
 			//Establish connection
 
-			Socket clientSocket = new Socket("10.10.132.42", 1026);
+			Socket clientSocket = new Socket("localhost", 1026);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 
 			new RecieverThread(clientSocket).start();
@@ -130,8 +131,8 @@ public class GUI extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
-			me = new Player("Orville",9,4,"up");
-			players.add(me);
+			Peter = new Player("Peter",9,4,"up");
+			players.add(Peter);
 			fields[9][4].setGraphic(new ImageView(hero_up));
 
 			Rasmus = new Player("Rasmus",14,15,"up");
@@ -151,19 +152,19 @@ public class GUI extends Application {
 					switch (event.getCode()) {
 						case UP:
 							outToServer.writeBytes(("Peter " + "0 -1" +" up \n"));
-							playerMoved(me,0,-1,"up");
+							playerMoved(Peter,0,-1,"up");
 							break;
 						case DOWN:
 							outToServer.writeBytes(("Peter " + "0 +1" +" down \n"));
-							playerMoved(me,0,+1,"down");
+							playerMoved(Peter,0,+1,"down");
 							break;
 						case LEFT:
 							outToServer.writeBytes(("Peter -1 0 left \n"));
-							playerMoved(me,-1,0,"left");
+							playerMoved(Peter,-1,0,"left");
 							break;
 						case RIGHT:
 							outToServer.writeBytes(("Peter +1 0 right \n"));
-							playerMoved(me,+1,0,"right");
+							playerMoved(Peter,+1,0,"right");
 							break;
 
 						default: break;
@@ -261,9 +262,9 @@ public class GUI extends Application {
 					System.out.println(clientSentence);
 					String[] clientInfo = clientSentence.split(" ");
 					switch (clientInfo[0]) {
-						case "Dan" -> playerMoved(Dan, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
-						case "Rasmus" -> playerMoved(Rasmus, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
-						case "Abdulahi" -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
+						case "Dan" -> Platform.runLater(() -> playerMoved(Dan, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]));
+						case "Rasmus" -> Platform.runLater(() -> playerMoved(Rasmus, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]));
+						case "Abdulahi" -> Platform.runLater(() -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]));
 					}
 
 
