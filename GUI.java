@@ -29,6 +29,9 @@ public class GUI extends Application {
 	public static Image hero_right,hero_left,hero_up,hero_down;
 
 	public static Player me;
+	public static Player Dan;
+	public static Player Rasmus;
+	public static Player Abdulahi;
 	public static List<Player> players = new ArrayList<>();
 
 	private Label[][] fields;
@@ -70,7 +73,7 @@ public class GUI extends Application {
 
 			//Establish connection
 
-			Socket clientSocket = new Socket("localhost", 1026);
+			Socket clientSocket = new Socket("10.10.132.42", 1026);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 
 			new RecieverThread(clientSocket).start();
@@ -127,24 +130,40 @@ public class GUI extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
+			me = new Player("Orville",9,4,"up");
+			players.add(me);
+			fields[9][4].setGraphic(new ImageView(hero_up));
+
+			Rasmus = new Player("Rasmus",14,15,"up");
+			players.add(Rasmus);
+			fields[14][15].setGraphic(new ImageView(hero_up));
+
+			Abdulahi = new Player("Abdulahi",13,14,"down");
+			players.add(Abdulahi);
+			fields[13][14].setGraphic(new ImageView(hero_down));
+
+			Dan = new Player("Dan",7,3,"down");
+			players.add(Dan);
+			fields[7][3].setGraphic(new ImageView(hero_down));
+
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 				try {
 					switch (event.getCode()) {
 						case UP:
-							outToServer.writeBytes("up \n");
-							playerMoved(0,-1,"up");
+							outToServer.writeBytes(("Peter " + "0 -1" +" up \n"));
+							playerMoved(me,0,-1,"up");
 							break;
 						case DOWN:
-							outToServer.writeBytes(("down \n"));
-							playerMoved(0,+1,"down");
+							outToServer.writeBytes(("Peter " + "0 +1" +" down \n"));
+							playerMoved(me,0,+1,"down");
 							break;
 						case LEFT:
-							outToServer.writeBytes(("left \n"));
-							playerMoved(-1,0,"left");
+							outToServer.writeBytes(("Peter -1 0 left \n"));
+							playerMoved(me,-1,0,"left");
 							break;
 						case RIGHT:
-							outToServer.writeBytes(("right \n"));
-							playerMoved(+1,0,"right");
+							outToServer.writeBytes(("Peter +1 0 right \n"));
+							playerMoved(me,+1,0,"right");
 							break;
 
 						default: break;
@@ -156,18 +175,7 @@ public class GUI extends Application {
 			});
 			
             // Setting up standard players
-			
-			me = new Player("Orville",9,4,"up");
-			players.add(me);
-			fields[9][4].setGraphic(new ImageView(hero_up));
 
-			Player harry = new Player("Harry",14,15,"up");
-			players.add(harry);
-			fields[14][15].setGraphic(new ImageView(hero_up));
-
-			Player johan = new Player("Johan",13,14,"down");
-			players.add(johan);
-			fields[13][14].setGraphic(new ImageView(hero_down));
 
 			scoreList.setText(getScoreList());
 		} catch(Exception e) {
@@ -175,21 +183,21 @@ public class GUI extends Application {
 		}
 	}
 
-	public void playerMoved(int delta_x, int delta_y, String direction) {
-		me.direction = direction;
+	public void playerMoved(Player player, int delta_x, int delta_y, String direction) {
+		player.direction = direction;
 		Server.sendMessage(direction);
-		int x = me.getXpos(),y = me.getYpos();
+		int x = player.getXpos(),y = player.getYpos();
 
 		if (board[y+delta_y].charAt(x+delta_x)=='w') {
-			me.addPoints(-1);
+			player.addPoints(-1);
 		} 
 		else {
 			Player p = getPlayerAt(x+delta_x,y+delta_y);
 			if (p!=null) {
-              me.addPoints(10);
+              player.addPoints(10);
               p.addPoints(-10);
 			} else {
-				me.addPoints(1);
+				player.addPoints(1);
 			
 				fields[x][y].setGraphic(new ImageView(image_floor));
 				x+=delta_x;
@@ -209,8 +217,8 @@ public class GUI extends Application {
 				};
 
 
-				me.setXpos(x);
-				me.setYpos(y);
+				player.setXpos(x);
+				player.setYpos(y);
 			}
 		}
 		scoreList.setText(getScoreList());
@@ -250,7 +258,15 @@ public class GUI extends Application {
 				// Do the work and the communication with the client here
 				while (true){
 					clientSentence = inFromClient.readLine();
-					System.out.println("Prut" + clientSentence);
+					System.out.println(clientSentence);
+					String[] clientInfo = clientSentence.split(" ");
+					switch (clientInfo[0]) {
+						case "Dan" -> playerMoved(Dan, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
+						case "Rasmus" -> playerMoved(Rasmus, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
+						case "Abdulahi" -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3]);
+					}
+
+
 				}
 
 			} catch (IOException e) {
