@@ -1,5 +1,7 @@
 package game2023.game2023;
 
+import javafx.application.Application;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,18 +22,23 @@ public class Server {
             ServerThread serverThread = new ServerThread(connectionSocket);
             clients.add(serverThread);
             serverThread.start();
+            if(clients.size() >= 1){
+                GUI.gameReady = true;
+                System.out.println(GUI.gameReady);
+
+                System.out.println(clients.size() + " Is connected");
+            }
         }
 
     }
 
-    public static void sendMessage(String message){
+    public synchronized static void sendMessage(String message){
         for(ServerThread s : clients){
             s.sendMessage(message);
-            System.out.println("I serveren" + message);
-
         }
     }
 
-
-
+    public static ArrayList<ServerThread> getClients() {
+        return clients;
+    }
 }
