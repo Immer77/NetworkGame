@@ -1,5 +1,20 @@
 package game2023.game2023;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,17 +22,6 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.text.*;
 
 public class GUI extends Application {
 
@@ -28,6 +32,9 @@ public class GUI extends Application {
     public static Image image_floor;
     public static Image image_wall;
     public static Image hero_right, hero_left, hero_up, hero_down;
+    public static Image fire_right, fire_left, fire_up, fire_down;
+    public static Image fire_horizontal, fire_vertical;
+    public static Image fire_wall_east, fire_wall_north, fire_wall_south, fire_wall_west;
 
     public static boolean gameReady = false;
     public static Player Peter;
@@ -107,6 +114,17 @@ public class GUI extends Application {
             hero_up = new Image(getClass().getResourceAsStream("Image/heroUp.png"), size, size, false, false);
             hero_down = new Image(getClass().getResourceAsStream("Image/heroDown.png"), size, size, false, false);
 
+            fire_down = new Image(getClass().getResourceAsStream("Image/fireDown.png"), size, size, false, false);
+            fire_horizontal = new Image(getClass().getResourceAsStream("Image/fireHorizontal.png"), size, size, false, false);
+            fire_left = new Image(getClass().getResourceAsStream("Image/fireLeft.png"), size, size, false, false);
+            fire_right = new Image(getClass().getResourceAsStream("Image/fireRight.png"), size, size, false, false);
+            fire_up = new Image(getClass().getResourceAsStream("Image/fireUp.png"), size, size, false, false);
+            fire_vertical = new Image(getClass().getResourceAsStream("Image/fireVertical.png"), size, size, false, false);
+            fire_wall_east = new Image(getClass().getResourceAsStream("Image/fireWallEast.png"), size, size, false, false);
+            fire_wall_west = new Image(getClass().getResourceAsStream("Image/fireWallWest.png"), size, size, false, false);
+            fire_wall_north = new Image(getClass().getResourceAsStream("Image/fireWallNorth.png"), size, size, false, false);
+            fire_wall_south = new Image(getClass().getResourceAsStream("Image/fireWallSouth.png"), size, size, false, false);
+
             fields = new Label[20][20];
             for (int j = 0; j < 20; j++) {
                 for (int i = 0; i < 20; i++) {
@@ -135,41 +153,49 @@ public class GUI extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
 
-            Peter = new Player("Peter", 9, 4, "up");
+            Peter = new Player("Peter", "up");
             players.add(Peter);
-            fields[9][4].setGraphic(new ImageView(hero_up));
+//            fields[9][4].setGraphic(new ImageView(hero_up));
 
-            Rasmus = new Player("Rasmus", 14, 15, "up");
+            Rasmus = new Player("Rasmus", "up");
             players.add(Rasmus);
-            //fields[14][15].setGraphic(new ImageView(hero_up));
+            fields[14][15].setGraphic(new ImageView(hero_up));
 
-            Abdulahi = new Player("Abdulahi", 13, 14, "down");
+            Abdulahi = new Player("Abdulahi", "down");
             players.add(Abdulahi);
             //fields[13][14].setGraphic(new ImageView(hero_down));
 
             Dan = new Player("Dan", 7, 3, "down");
             players.add(Dan);
-            //fields[7][3].setGraphic(new ImageView(hero_down));
+            fields[7][3].setGraphic(new ImageView(hero_down));
 
             scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
                 try {
                     switch (event.getCode()) {
                         case UP:
-                            outToServer.writeBytes(("Peter 0 -1 up " + Peter.getXpos() + " " + Peter.getYpos() +"\n"));
-                            playerMoved(Peter, 0, -1, "up", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes(("MOVE Dan 0 -1 up " + Dan.getXpos() + " " + Dan.getYpos() +"\n"));
+                            playerMoved(Dan, 0, -1, "up", Dan.xpos, Dan.ypos);
+                            outToServer.writeBytes(("POINT Dan " + Dan.getPoint() + "\n"));
                             break;
                         case DOWN:
-                            outToServer.writeBytes(("Peter " + "0 +1" + " down " + Peter.getXpos() + " " + Peter.getYpos() + "\n"));
-                            playerMoved(Peter, 0, +1, "down", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes(("MOVE Dan " + "0 +1" + " down " + Dan.getXpos() + " " + Dan.getYpos() + "\n"));
+                            playerMoved(Dan, 0, +1, "down", Dan.xpos, Dan.ypos);
+                            outToServer.writeBytes(("POINT Dan " + Dan.getPoint()+ "\n"));
                             break;
                         case LEFT:
-                            outToServer.writeBytes(("Peter -1 0 left " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
-                            playerMoved(Peter, -1, 0, "left", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes(("MOVE Dan -1 0 left " + Dan.getXpos() + " " + Dan.getYpos() + " \n"));
+                            playerMoved(Dan, -1, 0, "left", Dan.xpos, Dan.ypos);
+                            outToServer.writeBytes(("POINT Dan " + Dan.getPoint()+ "\n"));
                             break;
                         case RIGHT:
-                            outToServer.writeBytes(("Peter +1 0 right " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
-                            playerMoved(Peter, +1, 0, "right", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes(("MOVE Dan +1 0 right " + Dan.getXpos() + " " + Dan.getYpos() + " \n"));
+                            playerMoved(Dan, +1, 0, "right", Dan.xpos, Dan.ypos);
+                            outToServer.writeBytes("POINT Dan " + Dan.getPoint()+ "\n");
                             break;
+                        case SPACE:
+                            outToServer.writeBytes("SHOOT Dan " + Dan.getDirection() + " \n");
+                            playerShoot(Dan);
+                            outToServer.writeBytes("POINT Dan " + Dan.getPoint()+ "\n");
                         default:
                             break;
 
@@ -190,7 +216,134 @@ public class GUI extends Application {
         }
     }
 
+    /*
+    tjekker om der er en mur en den retning spilleren skyder
+   Hvis der ikke er det, bliver der spawnet et skud.
+   I while loopet søger den efter en mur,
+   Indtil den finder en mur spawner den fire-horizontal/vertical.png
+   når den rammer muren spawner den fireWall.png
+
+   En spillers point bliver sat til 0 hvis man bliver skudt
+     */
+    public void playerShoot(Player player) {
+        String playerDirection = player.direction;
+        int playerX = player.getXpos();
+        int playerY = player.getYpos();
+
+        if (playerDirection.equals("right") && !(board[playerY].charAt(playerX + 1) == 'w')) {
+            player.setShotFired(true);
+            Player p = getPlayerAt(playerX +1, playerY);
+            if (p != null && p.getPoint() > 0) {
+                p.setPoint(0);
+            }
+            fields[playerX + 1][playerY].setGraphic(new ImageView(fire_right));
+
+            int i = 2;
+            while (board[playerY].charAt(playerX + i) != 'w') {
+
+                p = getPlayerAt(playerX + i, playerY);
+                if (p != null && p.getPoint() > 0) {
+                    p.setPoint(0);
+                }
+
+                if (board[playerY].charAt(playerX + i + 1) == 'w') {
+
+                    fields[playerX + i][playerY].setGraphic(new ImageView(fire_wall_east));
+                } else {
+
+                    fields[playerX + i][playerY].setGraphic(new ImageView(fire_horizontal));
+                }
+
+                i++;
+            }
+        }
+
+        if (playerDirection.equals("left") && !(board[playerY].charAt(playerX - 1) == 'w')) {
+            player.setShotFired(true);
+            Player p = getPlayerAt(playerX -1, playerY);
+            if (p != null && p.getPoint() > 0) {
+                p.setPoint(0);
+            }
+            fields[playerX - 1][playerY].setGraphic(new ImageView(fire_left));
+
+            int i = 2;
+            while (board[playerY].charAt(playerX - i) != 'w') {
+
+                p = getPlayerAt(playerX - i, playerY);
+                if (p != null && p.getPoint() > 0) {
+                    p.setPoint(0);
+                }
+
+                if (board[playerY].charAt(playerX - i - 1) == 'w') {
+                    fields[playerX - i][playerY].setGraphic(new ImageView(fire_wall_west));
+                } else {
+
+                    fields[playerX - i][playerY].setGraphic(new ImageView(fire_horizontal));
+                }
+
+                i++;
+            }
+        }
+
+        if (playerDirection.equals("up") && !(board[playerY - 1].charAt(playerX) == 'w')) {
+            player.setShotFired(true);
+            Player p = getPlayerAt(playerX, playerY - 1);
+            if (p != null && p.getPoint() > 0) {
+                p.setPoint(0);
+            }
+            fields[playerX][playerY - 1].setGraphic(new ImageView(fire_up));
+
+            int i = 2;
+            while (board[playerY - i].charAt(playerX) != 'w') {
+
+                p = getPlayerAt(playerX, playerY - i);
+                if (p != null && p.getPoint() > 0) {
+                    p.setPoint(0);
+                }
+
+                if (board[playerY - i - 1].charAt(playerX) == 'w') {
+                    fields[playerX][playerY - i].setGraphic(new ImageView(fire_wall_north));
+                } else {
+
+                    fields[playerX][playerY - i].setGraphic(new ImageView(fire_vertical));
+                }
+
+                i++;
+            }
+        }
+
+        if (playerDirection.equals("down") && !(board[playerY + 1].charAt(playerX) == 'w')) {
+            player.setShotFired(true);
+            Player p = getPlayerAt(playerX, playerY + 1);
+            if (p != null && p.getPoint() > 0) {
+                p.setPoint(0);
+            }
+            fields[playerX][playerY + 1].setGraphic(new ImageView(fire_down));
+
+            int i = 2;
+            while (board[playerY + i].charAt(playerX) != 'w') {
+
+                p = getPlayerAt(playerX, playerY + 1);
+                if (p != null && p.getPoint() > 0) {
+                    p.setPoint(0);
+                }
+
+                if (board[playerY + i + 1].charAt(playerX) == 'w') {
+                    fields[playerX][playerY + i].setGraphic(new ImageView(fire_wall_south));
+                } else {
+
+                    fields[playerX][playerY + i].setGraphic(new ImageView(fire_vertical));
+                }
+
+                i++;
+            }
+        }
+    }
+
     public void playerMoved(Player player, int delta_x, int delta_y, String direction, int xPos, int yPos) {
+        String oldDirection = player.getDirection();
+        int oldX = player.getXpos();
+        int oldY = player.getYpos();
         player.direction = direction;
         player.setYpos(yPos);
         player.setXpos(xPos);
@@ -201,9 +354,50 @@ public class GUI extends Application {
             player.addPoints(-1);
         } else {
             Player p = getPlayerAt(x + delta_x, y + delta_y);
+
+            /*
+            Fjern skud når man flytter sig
+             */
+            if (player.isShotFired()) {
+                if (oldDirection.equals("right")) {
+                    int i = 1;
+                    while (board[oldY].charAt(oldX + i) != 'w') {
+                        fields[oldX + i][oldY].setGraphic(new ImageView(image_floor));
+
+                        i++;
+                    }
+                }
+                if (oldDirection.equals("left")) {
+                    int i = 1;
+                    while (board[oldY].charAt(oldX - i) != 'w') {
+                        fields[oldX - i][oldY].setGraphic(new ImageView(image_floor));
+
+                        i++;
+                    }
+                }
+                if (oldDirection.equals("up")) {
+                    int i = 1;
+                    while (board[oldY - i].charAt(oldX) != 'w') {
+                        fields[oldX][oldY - i].setGraphic(new ImageView(image_floor));
+
+                        i++;
+                    }
+                }
+                if (oldDirection.equals("down")) {
+                    int i = 1;
+                    while (board[oldY + i].charAt(oldX) != 'w') {
+                        fields[oldX][oldY + i].setGraphic(new ImageView(image_floor));
+
+                        i++;
+                    }
+                }
+                player.setShotFired(false);
+            }
+
             if (p != null) {
                 player.addPoints(10);
                 p.addPoints(-10);
+
             } else {
                 player.addPoints(1);
 
@@ -227,12 +421,11 @@ public class GUI extends Application {
                     fields[x][y].setGraphic(new ImageView(hero_down));
                 }
                 ;
-
-
                 player.setXpos(x);
                 player.setYpos(y);
             }
         }
+
         scoreList.setText(getScoreList());
     }
 
@@ -273,13 +466,26 @@ public class GUI extends Application {
                     clientSentence = inFromClient.readLine();
                     System.out.println(clientSentence);
                     String[] clientInfo = clientSentence.split(" ");
-                    switch (clientInfo[0]) {
-                        case "Dan" -> Platform.runLater(() -> playerMoved(Dan, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
-                        case "Rasmus" -> Platform.runLater(() -> playerMoved(Rasmus, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
-                        case "Abdulahi" -> Platform.runLater(() -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
+
+                    if (clientInfo[0].equals("MOVE")) {
+                        switch (clientInfo[1]) {
+                            case "Peter" -> Platform.runLater(() -> playerMoved(Peter, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                            case "Rasmus" -> Platform.runLater(() -> playerMoved(Rasmus, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                            case "Abdulahi" -> Platform.runLater(() -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                        }
+                    } else if (clientInfo[0].equals("POINT")) {
+                        switch (clientInfo[1]) {
+                            case "Peter" -> Platform.runLater(() -> Peter.setPoint(Integer.parseInt(clientInfo[2])));
+                            case "Rasmus" -> Platform.runLater(() -> Rasmus.setPoint(Integer.parseInt(clientInfo[2])));
+                            case "Abdulahi" -> Platform.runLater(() -> Abdulahi.setPoint(Integer.parseInt(clientInfo[2])));
+                        }
+                    } else if (clientInfo[0].equals("SHOOT")) {
+                        switch (clientInfo[1]) {
+                            case "Peter" -> Platform.runLater(() -> playerShoot(Peter));
+                            case "Rasmus" -> Platform.runLater(() -> playerShoot(Rasmus));
+                            case "Abdulahi" -> Platform.runLater(() -> playerShoot(Abdulahi));
+                        }
                     }
-
-
                 }
 
             } catch (IOException e) {
