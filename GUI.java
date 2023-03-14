@@ -141,27 +141,23 @@ public class GUI extends Application {
 
             Rasmus = new Player("Rasmus", 14, 15, "up");
             players.add(Rasmus);
-            fields[14][15].setGraphic(new ImageView(hero_up));
+            //fields[14][15].setGraphic(new ImageView(hero_up));
 
             Abdulahi = new Player("Abdulahi", 13, 14, "down");
             players.add(Abdulahi);
-            fields[13][14].setGraphic(new ImageView(hero_down));
+            //fields[13][14].setGraphic(new ImageView(hero_down));
 
             Dan = new Player("Dan", 7, 3, "down");
             players.add(Dan);
-            fields[7][3].setGraphic(new ImageView(hero_down));
+            //fields[7][3].setGraphic(new ImageView(hero_down));
 
             scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
                 try {
                     switch (event.getCode()) {
                         case UP:
-                            if(gameReady){
-                                System.out.println("Nu jeg inde");
-                                outToServer.writeBytes(("Peter 0 -1 up " + Peter.getXpos() + " " + Peter.getYpos() + "\n"));
-                                playerMoved(Peter, 0, -1, "up", Peter.xpos, Peter.ypos);
-                            }
+                            outToServer.writeBytes(("Peter 0 -1 up " + Peter.getXpos() + " " + Peter.getYpos() +"\n"));
+                            playerMoved(Peter, 0, -1, "up", Peter.xpos, Peter.ypos);
                             break;
-
                         case DOWN:
                             outToServer.writeBytes(("Peter " + "0 +1" + " down " + Peter.getXpos() + " " + Peter.getYpos() + "\n"));
                             playerMoved(Peter, 0, +1, "down", Peter.xpos, Peter.ypos);
