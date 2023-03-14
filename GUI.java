@@ -5,8 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.sql.ClientInfoStatus;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -25,18 +27,21 @@ public class GUI extends Application {
     public static final int scene_height = size * 20 + 100;
     public static final int scene_width = size * 20 + 200;
 
+    public static GridPane boardGrid = new GridPane();
+
     public static Image image_floor;
     public static Image image_wall;
+    public static Image image_chest;
     public static Image hero_right, hero_left, hero_up, hero_down;
 
-    public static boolean gameReady = false;
+
     public static Player Peter;
     public static Player Dan;
     public static Player Rasmus;
     public static Player Abdulahi;
     public static List<Player> players = new ArrayList<>();
 
-    private Label[][] fields;
+    private static Label[][] fields;
     private TextArea scoreList;
 
     private String[] board = {    // 20x20
@@ -75,13 +80,14 @@ public class GUI extends Application {
 
             //Establish connection
 
+//            Socket clientSocket = new Socket("10.10.131.253", 1026);
             Socket clientSocket = new Socket("localhost", 1026);
-            //Socket clientSocket = new Socket("10.10.138.121", 1026);
             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 
 
             new RecieverThread(clientSocket).start();
             new SendThread(clientSocket).start();
+            new packageSpawner(clientSocket).start();
 
 
             GridPane grid = new GridPane();
@@ -97,10 +103,11 @@ public class GUI extends Application {
 
             scoreList = new TextArea();
 
-            GridPane boardGrid = new GridPane();
+
 
             image_wall = new Image(getClass().getResourceAsStream("Image/wall4.png"), size, size, false, false);
             image_floor = new Image(getClass().getResourceAsStream("Image/floor1.png"), size, size, false, false);
+            image_chest = new Image(getClass().getResourceAsStream("Image/boxOfPoints.png"), size, size,false,false);
 
             hero_right = new Image(getClass().getResourceAsStream("Image/heroRight.png"), size, size, false, false);
             hero_left = new Image(getClass().getResourceAsStream("Image/heroLeft.png"), size, size, false, false);
@@ -108,21 +115,25 @@ public class GUI extends Application {
             hero_down = new Image(getClass().getResourceAsStream("Image/heroDown.png"), size, size, false, false);
 
             fields = new Label[20][20];
-            for (int j = 0; j < 20; j++) {
-                for (int i = 0; i < 20; i++) {
-                    switch (board[j].charAt(i)) {
-                        case 'w':
-                            fields[i][j] = new Label("", new ImageView(image_wall));
-                            break;
-                        case ' ':
-                            fields[i][j] = new Label("", new ImageView(image_floor));
-                            break;
-                        default:
-                            throw new Exception("Illegal field value: " + board[j].charAt(i));
-                    }
-                    boardGrid.add(fields[i][j], i, j);
-                }
-            }
+            updateBoard(boardGrid);
+//            for (int j = 0; j < 20; j++) {
+//                for (int i = 0; i < 20; i++) {
+//                    switch (board[j].charAt(i)) {
+//                        case 'w':
+//                            fields[i][j] = new Label("", new ImageView(image_wall));
+//                            break;
+//                        case ' ':
+//                            fields[i][j] = new Label("", new ImageView(image_floor));
+//                            break;
+//                        case 'x':
+//                            fields[i][j] = new Label("", new ImageView(image_chest));
+//                            break;
+//                        default:
+//                            throw new Exception("Illegal field value: " + board[j].charAt(i));
+//                    }
+//                    boardGrid.add(fields[i][j], i, j);
+//                }
+//            }
             scoreList.setEditable(false);
 
 
@@ -135,19 +146,19 @@ public class GUI extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
 
-            Peter = new Player("Peter", 9, 4, "up");
+            Peter = new Player("Peter", 9,4, "up");
             players.add(Peter);
             fields[9][4].setGraphic(new ImageView(hero_up));
 
-            Rasmus = new Player("Rasmus", 14, 15, "up");
+            Rasmus = new Player("Rasmus", "up");
             players.add(Rasmus);
             //fields[14][15].setGraphic(new ImageView(hero_up));
 
-            Abdulahi = new Player("Abdulahi", 13, 14, "down");
+            Abdulahi = new Player("Abdulahi", "down");
             players.add(Abdulahi);
             //fields[13][14].setGraphic(new ImageView(hero_down));
 
-            Dan = new Player("Dan", 7, 3, "down");
+            Dan = new Player("Dan",  "down");
             players.add(Dan);
             //fields[7][3].setGraphic(new ImageView(hero_down));
 
@@ -155,20 +166,24 @@ public class GUI extends Application {
                 try {
                     switch (event.getCode()) {
                         case UP:
-                            outToServer.writeBytes(("Peter 0 -1 up " + Peter.getXpos() + " " + Peter.getYpos() +"\n"));
+                            outToServer.writeBytes(("MOVE Peter 0 -1 up " + Peter.getXpos() + " " + Peter.getYpos() +"\n"));
                             playerMoved(Peter, 0, -1, "up", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes("POINT Peter " + Peter.getPoint() + "\n");
                             break;
                         case DOWN:
-                            outToServer.writeBytes(("Peter " + "0 +1" + " down " + Peter.getXpos() + " " + Peter.getYpos() + "\n"));
+                            outToServer.writeBytes(("MOVE Peter " + "0 +1" + " down " + Peter.getXpos() + " " + Peter.getYpos() + "\n"));
                             playerMoved(Peter, 0, +1, "down", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes("POINT Peter " + Peter.getPoint() + "\n");
                             break;
                         case LEFT:
-                            outToServer.writeBytes(("Peter -1 0 left " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
+                            outToServer.writeBytes(("MOVE Peter -1 0 left " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
                             playerMoved(Peter, -1, 0, "left", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes("POINT Peter " + Peter.getPoint() + "\n");
                             break;
                         case RIGHT:
-                            outToServer.writeBytes(("Peter +1 0 right " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
+                            outToServer.writeBytes(("MOVE Peter +1 0 right " + Peter.getXpos() + " " + Peter.getYpos() + " \n"));
                             playerMoved(Peter, +1, 0, "right", Peter.xpos, Peter.ypos);
+                            outToServer.writeBytes("POINT Peter " + Peter.getPoint() + "\n");
                             break;
                         default:
                             break;
@@ -190,6 +205,31 @@ public class GUI extends Application {
         }
     }
 
+    public void updateBoard(GridPane gridBoard) throws Exception {
+        fields = new Label[20][20];
+        for (int j = 0; j < 20; j++) {
+            for (int i = 0; i < 20; i++) {
+                switch (board[j].charAt(i)) {
+                    case 'w':
+                        fields[i][j] = new Label("", new ImageView(image_wall));
+                        break;
+                    case ' ':
+                        fields[i][j] = new Label("", new ImageView(image_floor));
+                        break;
+                    case 'x':
+                        fields[i][j] = new Label("", new ImageView(image_floor));
+                        break;
+                    default:
+                        throw new Exception("Illegal field value: " + board[j].charAt(i));
+                }
+                gridBoard.add(fields[i][j], i, j);
+            }
+        }
+
+
+    }
+
+
     public void playerMoved(Player player, int delta_x, int delta_y, String direction, int xPos, int yPos) {
         player.direction = direction;
         player.setYpos(yPos);
@@ -205,6 +245,12 @@ public class GUI extends Application {
                 player.addPoints(10);
                 p.addPoints(-10);
             } else {
+                if(board[y + delta_y].charAt(x + delta_x) == 'x') {
+                    player.addPoints(20);
+                    fields[x][y].setGraphic(new ImageView(image_floor));
+                    x += delta_x;
+                    y += delta_y;
+                }
                 player.addPoints(1);
 
                 fields[x][y].setGraphic(new ImageView(image_floor));
@@ -214,19 +260,19 @@ public class GUI extends Application {
                 if (direction.equals("right")) {
                     fields[x][y].setGraphic(new ImageView(hero_right));
                 }
-                ;
+
                 if (direction.equals("left")) {
                     fields[x][y].setGraphic(new ImageView(hero_left));
                 }
-                ;
+
                 if (direction.equals("up")) {
                     fields[x][y].setGraphic(new ImageView(hero_up));
                 }
-                ;
+
                 if (direction.equals("down")) {
                     fields[x][y].setGraphic(new ImageView(hero_down));
                 }
-                ;
+
 
 
                 player.setXpos(x);
@@ -254,6 +300,38 @@ public class GUI extends Application {
     }
 
 
+    class packageSpawner extends Thread{
+        Socket connSocket;
+
+        public packageSpawner(Socket connSocket){
+            this.connSocket = connSocket;
+        }
+
+        public void run(){
+            try {
+                Random rand = new Random();
+                while (true){
+                    Thread.sleep(2000);
+                    DataOutputStream spawnPackages = new DataOutputStream(connSocket.getOutputStream());
+                    int x = rand.nextInt(18);
+                    int y = rand.nextInt(18);
+                    if(board[y].charAt(x) == ' '){
+                        spawnPackages.writeBytes("Package " + x + " " + y +"\n");
+                    }
+
+
+                }
+
+
+            }catch (IOException ie){
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     class RecieverThread extends Thread {
         Socket connSocket;
         String clientSentence;
@@ -273,10 +351,21 @@ public class GUI extends Application {
                     clientSentence = inFromClient.readLine();
                     System.out.println(clientSentence);
                     String[] clientInfo = clientSentence.split(" ");
-                    switch (clientInfo[0]) {
-                        case "Dan" -> Platform.runLater(() -> playerMoved(Dan, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
-                        case "Rasmus" -> Platform.runLater(() -> playerMoved(Rasmus, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
-                        case "Abdulahi" -> Platform.runLater(() -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[1]), Integer.parseInt(clientInfo[2]), clientInfo[3], Integer.parseInt(clientInfo[4]), Integer.parseInt(clientInfo[5])));
+                    if(clientInfo[0].equalsIgnoreCase("MOVE")){
+                        switch (clientInfo[1]) {
+                            case "Dan" -> Platform.runLater(() -> playerMoved(Dan, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                            case "Rasmus" -> Platform.runLater(() -> playerMoved(Rasmus, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                            case "Abdulahi" -> Platform.runLater(() -> playerMoved(Abdulahi, Integer.parseInt(clientInfo[2]), Integer.parseInt(clientInfo[3]), clientInfo[4], Integer.parseInt(clientInfo[5]), Integer.parseInt(clientInfo[6])));
+                        }
+                    }else if (clientInfo[0].equalsIgnoreCase("POINT")){
+                        switch (clientInfo[1]){
+                            case "Dan" -> Platform.runLater(() -> Dan.setPoint(Integer.parseInt(clientInfo[2])));
+                            case "Rasmus" -> Platform.runLater(() -> Rasmus.setPoint(Integer.parseInt(clientInfo[2])));
+                            case "Abdulahi" -> Platform.runLater(() -> Abdulahi.setPoint(Integer.parseInt(clientInfo[2])));
+                        }
+                    }else if(clientInfo[0].equalsIgnoreCase("Package")){
+                        Platform.runLater(() -> fields[Integer.parseInt(clientInfo[1])][Integer.parseInt(clientInfo[2])].setGraphic(new ImageView(image_chest)));
+                        
                     }
 
 

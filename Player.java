@@ -7,6 +7,12 @@ public class Player {
 	int point;
 	String direction;
 
+
+	public Player(String name, String direction) {
+		this.name = name;
+		this.direction = direction;
+		this.point = 0;
+	}
 	public Player(String name, int xpos, int ypos, String direction) {
 		this.name = name;
 		this.xpos = xpos;

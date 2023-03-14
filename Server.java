@@ -22,12 +22,6 @@ public class Server {
             ServerThread serverThread = new ServerThread(connectionSocket);
             clients.add(serverThread);
             serverThread.start();
-            if(clients.size() >= 1){
-                GUI.gameReady = true;
-                System.out.println(GUI.gameReady);
-
-                System.out.println(clients.size() + " Is connected");
-            }
         }
 
     }
@@ -38,7 +32,4 @@ public class Server {
         }
     }
 
-    public static ArrayList<ServerThread> getClients() {
-        return clients;
-    }
 }
