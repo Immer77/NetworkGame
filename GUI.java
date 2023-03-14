@@ -1,5 +1,20 @@
 package game2023.game2023;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,17 +22,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.text.*;
+import java.util.Random;
 
 public class GUI extends Application {
 
@@ -32,6 +37,8 @@ public class GUI extends Application {
     public static Image fire_right, fire_left, fire_up, fire_down;
     public static Image fire_horizontal, fire_vertical;
     public static Image fire_wall_east, fire_wall_north, fire_wall_south, fire_wall_west;
+
+    public static GridPane boardGrid = new GridPane();
 
 
     public static Player Peter;
@@ -495,15 +502,13 @@ public class GUI extends Application {
             try {
                 Random rand = new Random();
                 while (true){
-                    Thread.sleep(2000);
+                    Thread.sleep(20000);
                     DataOutputStream spawnPackages = new DataOutputStream(connSocket.getOutputStream());
                     int x = rand.nextInt(18);
                     int y = rand.nextInt(18);
                     if(board[y].charAt(x) == ' '){
                         spawnPackages.writeBytes("Package " + x + " " + y +"\n");
                     }
-
-
                 }
 
 
