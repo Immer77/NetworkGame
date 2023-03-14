@@ -6,19 +6,30 @@ public class Player {
 	int ypos;
 	int point;
 	String direction;
-
+	boolean shotFired = false;
 
 	public Player(String name, String direction) {
-		this.name = name;
-		this.direction = direction;
-		this.point = 0;
-	}
-	public Player(String name, int xpos, int ypos, String direction) {
 		this.name = name;
 		this.xpos = xpos;
 		this.ypos = ypos;
 		this.direction = direction;
 		this.point = 0;
+	}
+
+	public Player(String name, int xPos, int yPos, String direction) {
+		this.name = name;
+		this.xpos = xPos;
+		this.ypos = yPos;
+		this.direction = direction;
+		this.point = 0;
+	}
+
+	public boolean isShotFired() {
+		return shotFired;
+	}
+
+	public void setShotFired(boolean shotFired) {
+		this.shotFired = shotFired;
 	}
 
 	public int getXpos() {
